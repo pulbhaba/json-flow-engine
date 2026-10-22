@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/workflow.schema.json",
+  "id": "create-and-verify-resource",
+  "version": 1,
+  "description": "Create a resource through the API, read it back, and check the persisted state.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "baseUrl": { "type": "string", "format": "uri" },
+      "resourceName": { "type": "string", "minLength": 1 },
+      "apiToken": { "type": "string" }
+    },
+    "required": ["baseUrl", "resourceName", "apiToken"],
+    "additionalProperties": false
+  },
+  "constants": {
+    "resourcesPath": "/resources"
+  },
+  "steps": [
+    {
+      "id": "create-resource",
+      "type": "http.request",
+      "idempotencyKey": "create-{{input.resourceName}}",
+      "retry": { "maxAttempts": 3, "initialDelayMs": 200 },
+      "config": {
+        "method": "POST",
+        "url": "{{input.baseUrl}}{{constants.resourcesPath}}",
+        "headers": { "authorization": "Bearer {{input.apiToken}}" },
+        "body": {
+          "name": "{{input.resourceName}}",
+          "tags": ["integration-test"],
+          "priority": 2,
+          "archived": false
+        },
+        "expectStatus": [201]
+      }
+    },
+    {
+      "id": "verify-resource",
+      "type": "http.request",
+      "timeoutMs": 5000,
+      "config": {
+        "method": "GET",
+        "url": "{{input.baseUrl}}{{constants.resourcesPath}}/{{steps.create-resource.body.id}}",
+        "headers": { "authorization": "Bearer {{input.apiToken}}" }
+      }
+    },
+    {
+      "id": "check-persisted-state",
+      "type": "control.assert",
+      "config": {
+        "condition": {
+          "all": [
+            { "equals": ["{{steps.verify-resource.body.name}}", "{{input.resourceName}}"] },
+            { "equals": ["{{steps.verify-resource.body.archived}}", false] }
+          ]
+        },
+        "message": "resource {{steps.create-resource.body.id}} was not persisted as sent"
+      }
+    },
+    {
+      "id": "summary",
+      "type": "data.transform",
+      "config": {
+        "value": {
+          "resourceId": "{{steps.create-resource.body.id}}",
+          "createdStatus": "{{steps.create-resource.status}}",
+          "name": "{{steps.verify-resource.body.name}}"
+        }
+      }
+    }
+  ],
+  "output": "{{steps.summary}}"
+}

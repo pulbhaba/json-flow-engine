@@ -1,0 +1,9 @@
+{
+  "id": "broken",
+  "version": 1,
+  "steps": [
+    { "id": "a", "type": "http.request", "config": { "method": "GET", "url": "{{steps.b.url}}" } },
+    { "id": "b", "type": "no.such-op", "config": {} },
+    { "id": "a", "type": "data.transform", "config": { "value": 1 } }
+  ]
+}

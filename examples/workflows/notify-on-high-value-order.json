@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/workflow.schema.json",
+  "id": "notify-on-high-value-order",
+  "version": 2,
+  "description": "Fetch an order and notify a channel only when its total is above the threshold.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "baseUrl": { "type": "string" },
+      "orderId": { "type": "string" },
+      "threshold": { "type": "number" }
+    },
+    "required": ["baseUrl", "orderId"]
+  },
+  "steps": [
+    {
+      "id": "fetch-order",
+      "type": "http.request",
+      "config": { "method": "GET", "url": "{{input.baseUrl}}/orders/{{input.orderId}}" }
+    },
+    {
+      "id": "route",
+      "type": "control.condition",
+      "config": {
+        "if": {
+          "greaterThan": ["{{steps.fetch-order.body.total}}", "{{input.threshold ?? 1000}}"]
+        },
+        "then": [
+          {
+            "id": "notify",
+            "type": "http.request",
+            "config": {
+              "method": "POST",
+              "url": "{{input.baseUrl}}/notifications",
+              "body": {
+                "channel": "sales",
+                "text": "Order {{input.orderId}} totals {{steps.fetch-order.body.total}}"
+              }
+            }
+          },
+          {
+            "id": "notified",
+            "type": "data.transform",
+            "config": { "value": { "notified": true, "messageId": "{{steps.notify.body.id}}" } }
+          }
+        ],
+        "else": [
+          {
+            "id": "skipped",
+            "type": "data.transform",
+            "config": { "value": { "notified": false } }
+          }
+        ]
+      }
+    }
+  ],
+  "output": { "orderId": "{{input.orderId}}", "decision": "{{steps.route.output}}" }
+}

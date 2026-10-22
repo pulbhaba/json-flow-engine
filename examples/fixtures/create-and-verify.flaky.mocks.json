@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "mocks": [
+    {
+      "type": "http.request",
+      "steps": ["create-resource"],
+      "responses": [
+        {
+          "error": {
+            "code": "HTTP_STATUS",
+            "message": "POST /resources responded with 503",
+            "retryable": true,
+            "details": { "status": 503 }
+          }
+        },
+        {
+          "output": {
+            "status": 201,
+            "statusText": "Created",
+            "headers": {},
+            "body": { "id": "res_123", "name": "integration-widget" },
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "type": "http.request",
+      "steps": ["verify-resource"],
+      "responses": [
+        {
+          "output": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {},
+            "body": { "id": "res_123", "name": "integration-widget", "archived": false },
+            "url": ""
+          }
+        }
+      ]
+    }
+  ]
+}

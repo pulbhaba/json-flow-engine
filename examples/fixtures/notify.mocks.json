@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "mocks": [
+    {
+      "type": "http.request",
+      "steps": ["fetch-order"],
+      "responses": [
+        {
+          "output": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {},
+            "body": { "id": "ord_42", "total": 1250.5 },
+            "url": ""
+          }
+        }
+      ]
+    },
+    {
+      "type": "http.request",
+      "steps": ["notify"],
+      "responses": [
+        {
+          "output": {
+            "status": 202,
+            "statusText": "Accepted",
+            "headers": {},
+            "body": { "id": "msg_1" },
+            "url": ""
+          }
+        }
+      ]
+    }
+  ]
+}
