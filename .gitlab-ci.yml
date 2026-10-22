@@ -1,0 +1,37 @@
+# Same checks as .github/workflows/ci.yml, for GitLab-hosted forks.
+stages: [check]
+
+.node: &node
+  stage: check
+  cache:
+    key: npm-$CI_COMMIT_REF_SLUG
+    paths: [.npm/]
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+check:node22:
+  <<: *node
+  image: node:22
+  script:
+    - npm run typecheck
+    - npm run lint
+    - npm test
+    - npm run build
+    - node scripts/write-schema.js --check
+    - npm run verify:package
+
+check:node24:
+  <<: *node
+  image: node:24
+  script:
+    - npm run check
+
+runtime:node20:
+  <<: *node
+  image: node:20
+  script:
+    - npm run build
+    - npm run verify:package
