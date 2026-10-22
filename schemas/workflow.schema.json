@@ -1,0 +1,492 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://json-flow-engine.dev/schemas/v1/workflow.json",
+  "title": "json-flow-engine workflow (format version 1)",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "inputSchema": {
+      "type": "object"
+    },
+    "constants": {
+      "type": "object"
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxSteps": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "output": {},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/step"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "steps"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "retry": {
+      "type": "object",
+      "properties": {
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "initialDelayMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxDelayMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "backoffMultiplier": {
+          "type": "number",
+          "minimum": 1
+        },
+        "jitter": {
+          "type": "boolean"
+        },
+        "retryOn": {
+          "enum": [
+            "retryable",
+            "any"
+          ]
+        }
+      },
+      "required": [
+        "maxAttempts"
+      ],
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retry": {
+          "$ref": "#/$defs/retry"
+        },
+        "onError": {
+          "enum": [
+            "fail",
+            "continue"
+          ]
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "config"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "control.condition"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "https://json-flow-engine.dev/schemas/v1/control.condition.json"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "control.assert"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "https://json-flow-engine.dev/schemas/v1/control.assert.json"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "data.transform"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "https://json-flow-engine.dev/schemas/v1/data.transform.json"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "http.request"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "https://json-flow-engine.dev/schemas/v1/http.request.json"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "condition": {
+      "$id": "https://json-flow-engine.dev/schemas/v1/condition.json",
+      "description": "A boolean, a string template resolving to a boolean, or exactly one operator object: equals, not, all, any, defined, greaterThan, lessThan.",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "properties": {
+            "equals": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "equals"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "not": {
+              "$ref": "#"
+            }
+          },
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#"
+              }
+            }
+          },
+          "required": [
+            "all"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#"
+              }
+            }
+          },
+          "required": [
+            "any"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "defined": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "defined"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "greaterThan": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "greaterThan"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "lessThan": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "required": [
+            "lessThan"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "conditionStepConfig": {
+      "$id": "https://json-flow-engine.dev/schemas/v1/control.condition.json",
+      "type": "object",
+      "properties": {
+        "if": {
+          "$ref": "https://json-flow-engine.dev/schemas/v1/condition.json"
+        },
+        "then": {
+          "type": "array",
+          "items": {
+            "$ref": "https://json-flow-engine.dev/schemas/v1/workflow.json#/$defs/step"
+          }
+        },
+        "else": {
+          "type": "array",
+          "items": {
+            "$ref": "https://json-flow-engine.dev/schemas/v1/workflow.json#/$defs/step"
+          }
+        }
+      },
+      "required": [
+        "if",
+        "then"
+      ],
+      "additionalProperties": false
+    },
+    "assertStepConfig": {
+      "$id": "https://json-flow-engine.dev/schemas/v1/control.assert.json",
+      "type": "object",
+      "properties": {
+        "condition": {
+          "$ref": "https://json-flow-engine.dev/schemas/v1/condition.json"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "condition"
+      ],
+      "additionalProperties": false
+    },
+    "transformConfig": {
+      "$id": "https://json-flow-engine.dev/schemas/v1/data.transform.json",
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "Any JSON value; templates inside it are resolved and the result becomes the step output."
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "httpRequestConfig": {
+      "$id": "https://json-flow-engine.dev/schemas/v1/http.request.json",
+      "type": "object",
+      "properties": {
+        "method": {
+          "enum": [
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "description": "JSON request body. Sent as application/json unless bodyFormat is text."
+        },
+        "bodyFormat": {
+          "enum": [
+            "json",
+            "text"
+          ]
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "responseType": {
+          "enum": [
+            "auto",
+            "json",
+            "text",
+            "none"
+          ]
+        },
+        "expectStatus": {
+          "oneOf": [
+            {
+              "enum": [
+                "2xx",
+                "any"
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 599
+              },
+              "minItems": 1
+            }
+          ]
+        },
+        "maxResponseBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "idempotent": {
+          "type": "boolean",
+          "description": "Mark a POST/PATCH as safe to retry. Alternatively set the step's idempotencyKey."
+        }
+      },
+      "required": [
+        "method",
+        "url"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
