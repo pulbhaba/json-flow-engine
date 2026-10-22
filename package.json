@@ -1,0 +1,78 @@
+{
+  "name": "json-flow-engine",
+  "version": "0.1.0",
+  "description": "Code-first JSON workflow engine for backend integration automation and testing: validate, run, and sandbox JSON-defined workflows with mocked operations.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.3.0"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./workflow.schema.json": "./schemas/workflow.schema.json",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "json-flow": "./bin/json-flow.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "schemas/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:schema",
+    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:cjs": "tsc -p tsconfig.build.cjs.json && node scripts/write-cjs-package.js",
+    "build:schema": "node scripts/write-schema.js",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify:package": "bash scripts/verify-package.sh",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run verify:package",
+    "prepublishOnly": "npm run check"
+  },
+  "keywords": [
+    "workflow",
+    "automation",
+    "json",
+    "integration-testing",
+    "sandbox",
+    "mock",
+    "http",
+    "ci"
+  ],
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^24.19.2",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^10.0.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^5.0.5"
+  }
+}
