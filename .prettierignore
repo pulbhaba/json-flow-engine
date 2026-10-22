@@ -4,3 +4,4 @@ coverage/
 package-lock.json
 .consumer-check/
 CHANGELOG.md
+schemas/
