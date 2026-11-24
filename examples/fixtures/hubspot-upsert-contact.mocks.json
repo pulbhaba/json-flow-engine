@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "mocks": [
+    {
+      "type": "integration.call",
+      "steps": ["find-contact"],
+      "responses": [{ "output": { "total": 1, "results": [{ "id": "501" }] } }]
+    },
+    {
+      "type": "integration.call",
+      "steps": ["update-contact"],
+      "responses": [
+        { "output": { "id": "501", "properties": { "firstname": "Ada" }, "updatedAt": "t" } }
+      ]
+    },
+    {
+      "type": "integration.call",
+      "steps": ["create-contact"],
+      "responses": [
+        {
+          "output": {
+            "id": "777",
+            "properties": { "email": "ada@example.com" },
+            "createdAt": "t",
+            "updatedAt": "t"
+          }
+        }
+      ]
+    }
+  ]
+}
