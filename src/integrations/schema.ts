@@ -76,6 +76,7 @@ export const integrationSchema: JsonObject = {
     provider: { type: "string", minLength: 1, maxLength: 64, pattern: PROVIDER_PATTERN },
     name: { type: "string" },
     description: { type: "string" },
+    overridesBuiltin: { type: "boolean" },
     baseUrl: { type: "string", format: "uri", pattern: "^https://" },
     allowedHosts: {
       type: "array",

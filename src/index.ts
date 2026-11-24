@@ -48,6 +48,15 @@ export {
   validateIntegrationManifest,
   type IntegrationValidationResult,
 } from "./integrations/validate.js";
+export {
+  loadIntegrations,
+  DEFAULT_USER_INTEGRATIONS_DIR,
+  type IntegrationLoadError,
+  type IntegrationLoadResult,
+  type IntegrationSource,
+  type LoadedIntegration,
+  type LoadIntegrationsOptions,
+} from "./integrations/load.js";
 export { integrationSchema, INTEGRATION_SCHEMA_ID } from "./integrations/schema.js";
 export {
   INTEGRATION_AUTH_TYPES,

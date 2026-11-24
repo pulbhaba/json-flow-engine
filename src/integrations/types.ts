@@ -61,6 +61,11 @@ export type IntegrationManifest = {
   provider: string;
   name?: string;
   description?: string;
+  /**
+   * User manifests only: `true` explicitly opts in to replacing the built-in integration with the
+   * same `provider` id. Without it a duplicate id is a load error.
+   */
+  overridesBuiltin?: boolean;
   /** Absolute `https` URL every action path is resolved against. */
   baseUrl: string;
   /** Exact hostnames requests may reach; must include the `baseUrl` host. */
