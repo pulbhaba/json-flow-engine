@@ -57,4 +57,27 @@ Implemented in `src/integrations/` and published as
   only their structure; the expression scope (`input` for requests, the HTTP
   response for `response.output`) and template checking belong to the
   `integration.call` task and are not settled here.
+- Optional `overridesBuiltin` (boolean, user manifests): `true` is the explicit
+  opt-in that lets a user manifest replace the built-in one with the same
+  `provider` id (see Loader).
 - Wildcard hosts are not supported in `allowedHosts`.
+
+## Loader (refined in #3)
+
+Implemented in `src/integrations/load.ts` (`loadIntegrations`). It only reads
+and validates JSON; it never executes manifest content.
+
+- Discovers `<dir>/<provider>/integration.json` one level deep under a builtin
+  directory and a user directory (default `./integrations/user`, configurable).
+  A missing user directory is not an error; a missing builtin directory is
+  reported. Subdirectories without `integration.json` are ignored.
+- The result keeps the sources separate and labelled: `builtin` and `user`
+  lists plus a flat `errors` list. Each loaded entry records its `source`,
+  `file` and whether it `overrides` a built-in one.
+- The manifest `provider` must equal its directory name. Duplicate ids within a
+  source are errors. A user manifest that reuses a built-in id is an error
+  unless it sets `"overridesBuiltin": true`; then the user entry is active and
+  the built-in one stays listed with `overriddenBy` set.
+- Errors are reported per file (unreadable, invalid JSON, failed validation) and
+  never stop other files from loading.
+- The default user directory is resolved against the current working directory.

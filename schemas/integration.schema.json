@@ -22,6 +22,9 @@
     "description": {
       "type": "string"
     },
+    "overridesBuiltin": {
+      "type": "boolean"
+    },
     "baseUrl": {
       "type": "string",
       "format": "uri",
