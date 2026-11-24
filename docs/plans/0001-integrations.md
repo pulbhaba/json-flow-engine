@@ -13,12 +13,12 @@ stack. Issue numbers are filled in as they are created.
 
 | #   | Task                                                              | Type | Blocked by | Issue |
 | --- | ----------------------------------------------------------------- | ---- | ---------- | ----- |
-| 1   | Integration manifest format, JSON Schema and validator            | feat | -          |       |
-| 2   | Loader for `integrations/builtin` and `integrations/user`         | feat | 1          |       |
-| 3   | Build-time generation of the built-in registry                    | feat | 2          |       |
-| 4   | `integration.call` operation with credentials, sandbox and policy | feat | 3          |       |
-| 5   | Built-in integrations: HubSpot and OpenAI                         | feat | 4          |       |
-| 6   | CLI `integration list/validate/scaffold` and AI authoring guide   | feat | 4          |       |
+| 1   | Integration manifest format, JSON Schema and validator            | feat | -          | #2    |
+| 2   | Loader for `integrations/builtin` and `integrations/user`         | feat | 1          | #3    |
+| 3   | Build-time generation of the built-in registry                    | feat | 2          | #4    |
+| 4   | `integration.call` operation with credentials, sandbox and policy | feat | 3          | #5    |
+| 5   | Built-in integrations: HubSpot and OpenAI                         | feat | 4          | #6    |
+| 6   | CLI `integration list/validate/scaffold` and AI authoring guide   | feat | 4          | #7    |
 
 ## Open questions
 

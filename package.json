@@ -22,6 +22,7 @@
       }
     },
     "./workflow.schema.json": "./schemas/workflow.schema.json",
+    "./integration.schema.json": "./schemas/integration.schema.json",
     "./package.json": "./package.json"
   },
   "bin": {

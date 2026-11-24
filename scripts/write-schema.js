@@ -1,17 +1,27 @@
-// Writes the workflow JSON Schema from the built ESM output to schemas/workflow.schema.json.
+// Writes the JSON Schemas from the built ESM output to schemas/*.schema.json.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { workflowSchema } from "../dist/esm/workflow/schema.js";
+import { integrationSchema } from "../dist/esm/integrations/schema.js";
 
-const target = "schemas/workflow.schema.json";
-const next = `${JSON.stringify(workflowSchema, null, 2)}\n`;
-if (process.argv.includes("--check")) {
-  const current = existsSync(target) ? readFileSync(target, "utf8") : "";
-  if (current !== next) {
-    console.error(`${target} is out of date; run npm run build`);
-    process.exit(1);
+const targets = [
+  ["schemas/workflow.schema.json", workflowSchema],
+  ["schemas/integration.schema.json", integrationSchema],
+];
+const check = process.argv.includes("--check");
+let stale = false;
+for (const [target, schema] of targets) {
+  const next = `${JSON.stringify(schema, null, 2)}\n`;
+  if (check) {
+    const current = existsSync(target) ? readFileSync(target, "utf8") : "";
+    if (current !== next) {
+      console.error(`${target} is out of date; run npm run build`);
+      stale = true;
+    } else {
+      console.log(`${target} is up to date`);
+    }
+  } else {
+    writeFileSync(target, next);
+    console.log(`wrote ${target}`);
   }
-  console.log(`${target} is up to date`);
-} else {
-  writeFileSync(target, next);
-  console.log(`wrote ${target}`);
 }
+if (stale) process.exit(1);
