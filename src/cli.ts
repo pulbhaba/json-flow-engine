@@ -1,6 +1,7 @@
 import { parseArgs } from "node:util";
 import { createEngine, type EngineOptions } from "./engine/engine.js";
-import { isJsonFlowError, WorkflowValidationError } from "./errors.js";
+import { isJsonFlowError, JsonFlowError, WorkflowValidationError } from "./errors.js";
+import { loadUserIntegrations } from "./integrations/load.js";
 import type { JsonValue } from "./json.js";
 import { createConsoleLogger, type LogLevel } from "./logger.js";
 import { formatResult } from "./testing.js";
@@ -205,6 +206,14 @@ async function runCommand(
     },
   };
   if (values.mocks !== undefined) options.mocks = (await loadMocksFile(values.mocks)).mocks;
+  const userIntegrations = await loadUserIntegrations();
+  if (userIntegrations.errors.length > 0) {
+    throw new JsonFlowError(
+      "INTEGRATION_INVALID",
+      `Invalid user integrations: ${userIntegrations.errors.map((e) => `${e.file}: ${e.message}`).join("; ")}`,
+    );
+  }
+  options.integrations = { user: userIntegrations.user };
   const engine = createEngine(options);
 
   const validation = engine.validate(workflow);

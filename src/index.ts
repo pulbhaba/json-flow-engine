@@ -50,6 +50,7 @@ export {
 } from "./integrations/validate.js";
 export {
   loadIntegrations,
+  loadUserIntegrations,
   DEFAULT_USER_INTEGRATIONS_DIR,
   type IntegrationLoadError,
   type IntegrationLoadResult,
@@ -89,6 +90,12 @@ export {
   type HttpRequestConfig,
   type HttpResponseOutput,
 } from "./operations/builtin/http.js";
+export {
+  CREDENTIAL_ENV_PREFIX,
+  integrationCallConfigSchema,
+  type CredentialSource,
+  type IntegrationCallConfig,
+} from "./operations/builtin/integration.js";
 export { type TransformConfig } from "./operations/builtin/transform.js";
 export { evaluateCondition } from "./operations/builtin/control.js";
 export { isPrivateHost, type UrlPolicy } from "./http/url-policy.js";

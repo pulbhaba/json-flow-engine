@@ -214,6 +214,25 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "integration.call"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config": {
+                "$ref": "https://json-flow-engine.dev/schemas/v1/integration.call.json"
+              }
+            }
+          }
         }
       ]
     },
@@ -485,6 +504,33 @@
       "required": [
         "method",
         "url"
+      ],
+      "additionalProperties": false
+    },
+    "integrationCallConfig": {
+      "$id": "https://json-flow-engine.dev/schemas/v1/integration.call.json",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input": {
+          "description": "Action input; validated against the action's inputSchema."
+        },
+        "credentials": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "description": "Name of a credential (never the secret). Resolved from the engine's credential source or the environment."
+        }
+      },
+      "required": [
+        "provider",
+        "action"
       ],
       "additionalProperties": false
     }

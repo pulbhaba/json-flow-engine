@@ -271,6 +271,27 @@ Errors carry the method, sanitised URL, request header **names** (never values),
 are `retryable` only for `GET`, `HEAD`, `OPTIONS`, `PUT`, `DELETE`, requests marked
 `idempotent`, or steps with an `idempotencyKey`. Timeouts and network errors follow the same rule.
 
+### `integration.call`
+
+Calls an action of a built-in or user integration (see `docs/decisions/0001-integrations.md`).
+
+| Config        | Default  | Notes                                                                 |
+| ------------- | -------- | --------------------------------------------------------------------- |
+| `provider`    | required | Integration id, e.g. `hubspot`.                                       |
+| `action`      | required | Action name in the manifest.                                          |
+| `input`       | `{}`     | Validated against the action's `inputSchema`.                         |
+| `credentials` |          | Credential **name**; required unless the manifest's `auth` is `none`. |
+
+The request is expanded to an `http.request`, so the URL policy, `allowedHosts`, limits,
+timeouts, sandbox mocks (`engine.mock("integration.call", ...)`) and redaction all apply.
+Manifest templates see `input` (the action input); `response.output` sees `input` as
+`{ status, headers, body }`. Credentials come from `createEngine({ integrations: { credentials } })`
+(an object or function) or the environment variable `JSON_FLOW_CREDENTIAL_<NAME>`; they never
+appear in manifests, workflows, results, events, logs or errors. User integrations are passed as
+`integrations: { user }` (see `loadUserIntegrations()`, default `./integrations/user`).
+Errors: `INTEGRATION_UNKNOWN`, `INTEGRATION_INPUT_INVALID`, `INTEGRATION_CREDENTIAL_MISSING`,
+`INTEGRATION_REQUEST_INVALID`, plus the `HTTP_*` codes.
+
 ## Running workflows
 
 ### From code
@@ -495,6 +516,7 @@ Every error has a stable `code`, a `message`, `retryable`, JSON `details`, and `
 | `STEP_TIMEOUT`, `EXECUTION_TIMEOUT`, `CANCELLED`, `LIMIT_EXCEEDED`                                                                                                                                                                | Execution control.                                              |
 | `OPERATION_FAILED`, `OPERATION_OUTPUT_INVALID`                                                                                                                                                                                    | An operation threw a non-`JsonFlowError`, or returned non-JSON. |
 | `SANDBOX_MOCK_MISSING`, `MODE_MISMATCH`, `MOCK_FAILURE`                                                                                                                                                                           | Sandbox rules.                                                  |
+| `INTEGRATION_UNKNOWN`, `INTEGRATION_INPUT_INVALID`, `INTEGRATION_CREDENTIAL_MISSING`, `INTEGRATION_REQUEST_INVALID`                                                                                                               | `integration.call`.                                             |
 | `HTTP_URL_INVALID`, `HTTP_URL_FORBIDDEN`, `HTTP_NETWORK`, `HTTP_TIMEOUT`, `HTTP_STATUS`, `HTTP_RESPONSE_TOO_LARGE`, `HTTP_RESPONSE_INVALID`                                                                                       | `http.request`.                                                 |
 
 Retry policy per step:

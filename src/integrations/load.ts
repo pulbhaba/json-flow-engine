@@ -152,3 +152,15 @@ export async function loadIntegrations(
 
   return { builtin, user: acceptedUser, errors };
 }
+
+/**
+ * Loads only the user integrations directory (default `./integrations/user`), for passing to
+ * `createEngine({ integrations: { user } })`. Built-ins are compiled in and added by the engine.
+ */
+export async function loadUserIntegrations(
+  userDir: string = DEFAULT_USER_INTEGRATIONS_DIR,
+): Promise<{ user: LoadedIntegration[]; errors: IntegrationLoadError[] }> {
+  const errors: IntegrationLoadError[] = [];
+  const user = await loadSource("user", resolve(userDir), false, errors);
+  return { user, errors };
+}

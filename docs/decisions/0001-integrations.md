@@ -53,10 +53,9 @@ Implemented in `src/integrations/` and published as
   validator), a `request` (`method`, `path` starting with `/`, optional `query`,
   `headers`, `body`) and an optional `response` (`output` mapping,
   `successStatus`, default any 2xx).
-- Request and response values may hold `{{ }}` templates. This task validates
-  only their structure; the expression scope (`input` for requests, the HTTP
-  response for `response.output`) and template checking belong to the
-  `integration.call` task and are not settled here.
+- Request and response values may hold `{{ }}` templates. The manifest
+  validator checks only their structure; the expression scope is settled by
+  `integration.call` (see below).
 - Optional `overridesBuiltin` (boolean, user manifests): `true` is the explicit
   opt-in that lets a user manifest replace the built-in one with the same
   `provider` id (see Loader).
@@ -81,3 +80,40 @@ and validates JSON; it never executes manifest content.
 - Errors are reported per file (unreadable, invalid JSON, failed validation) and
   never stop other files from loading.
 - The default user directory is resolved against the current working directory.
+
+## `integration.call` (refined in #5)
+
+Implemented in `src/operations/builtin/integration.ts`; registered by every engine.
+
+- Config: `provider`, `action`, `input` (default `{}`) and `credentials`, the
+  **name** of a credential (never the secret). `input` is validated against the
+  action's `inputSchema` before anything runs (`INTEGRATION_INPUT_INVALID`).
+- Template scope, settled here (resolving the question left open in #2):
+  - Request template (`path`, `query`, `headers`, `body`): `input` is the
+    validated action input. `steps` and `constants` are empty, so a manifest can
+    never read workflow data it was not given. Values interpolated into `path`
+    are percent-encoded; a resolved path may not contain `?`, `#` or dot segments
+    and must stay on the `baseUrl` origin and in `allowedHosts`.
+    `null` query and header values are omitted.
+  - `response.output`: `input` is the HTTP response `{ status, headers, body }`
+    (headers already redacted). Credentials are not in any scope.
+- The request is expanded to an `http.request` config and executed by the same
+  machinery, so the engine URL policy, response size limit, timeout, retry rules
+  (method-aware), sandbox mocks (`mock("integration.call", ...)`, `allowLive`)
+  and redirect refusal all apply. `allowedHosts` is checked in addition to the
+  URL policy, never instead of it.
+- Credentials are resolved at call time from the engine's
+  `integrations.credentials` (an object or function: the run context), then from
+  the environment variable `JSON_FLOW_CREDENTIAL_<NAME>` (name upper-cased,
+  `-` to `_`). Arbitrary environment variables are not readable. `auth.type`
+  decides placement; `basic` expects the secret as `user:password`. A manifest
+  header with the same name as the auth header is replaced.
+  A missing credential fails with `INTEGRATION_CREDENTIAL_MISSING`; mocks need none.
+- The secret (and its base64 form for `basic`) is scrubbed from the output and
+  from error messages and details; error causes are dropped.
+- Sources: built-ins plus `integrations.user` passed to `createEngine`
+  (typically from `loadUserIntegrations(dir?)`, default `./integrations/user`;
+  the CLI `run` command loads the default). Collisions follow `combineIntegrations`
+  and throw `INTEGRATION_INVALID` at engine construction.
+- Not done: static (pre-run) checking that a provider/action exists; unknown ones
+  fail at run time with `INTEGRATION_UNKNOWN`.

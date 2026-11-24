@@ -42,6 +42,11 @@ export const ERROR_CODES = [
   "HTTP_STATUS",
   "HTTP_RESPONSE_TOO_LARGE",
   "HTTP_RESPONSE_INVALID",
+  // integration.call
+  "INTEGRATION_UNKNOWN",
+  "INTEGRATION_INPUT_INVALID",
+  "INTEGRATION_CREDENTIAL_MISSING",
+  "INTEGRATION_REQUEST_INVALID",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
