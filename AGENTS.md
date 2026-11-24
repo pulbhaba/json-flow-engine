@@ -1,0 +1,103 @@
+# json-flow-engine agent instructions
+
+## Start here
+
+- Treat the repository root as the directory containing this file.
+- Before changing code or documentation, read this file, `README.md`, and the
+  relevant decision records in `docs/decisions/`.
+- Keep documentation aligned with the implemented code. Label proposals and
+  unresolved choices clearly; do not present them as settled implementation.
+
+## Plans and workflow
+
+- Before planning work, inspect `docs/plans/` for an existing plan that covers
+  it. Update that plan when the work is the same; create a new plan for a
+  distinct objective.
+- Number new plans with the next unused four-digit number and name them
+  `NNNN-short-topic.md`. Never reuse a number. Decision records in
+  `docs/decisions/` follow the same numbering rule.
+- Write or update the plan before substantial implementation. Keep its status,
+  decisions, progress, and outstanding questions current, and mark it complete
+  only when its outcome is achieved.
+- Work in small, reviewable increments. Inspect the diff before committing.
+- Keep each task low in complexity and scoped to one outcome so its pull
+  request stays very small. Split broader work into separate task issues and
+  pull requests.
+
+## GitHub feature and implementation workflow
+
+Repository: `pulbhaba/json-flow-engine`. Track tasks as issues and sub-issues.
+
+### Create or start work
+
+1. Search issues for one specific to the task and for its owning feature
+   issue. Read matches, check for duplicates, and record acceptance criteria,
+   dependencies, and blockers before editing. Reuse a matching task issue.
+2. If none exists, create one with a clear description and acceptance
+   criteria, linked as a sub-issue of the feature issue (create the feature
+   issue first if needed).
+3. Assign the task issue to its owner and post one concise start comment with
+   blockers or related issues.
+4. Start every task branch from the latest `origin/develop`: fetch, fast-forward
+   local `develop`, then branch as `feat/ISSUE_NUMBER-short-description`,
+   `fix/...`, `chore/...`, or `doc/...`. Never commit task work on `develop` or
+   `main`, and never push to them directly.
+5. Before multi-file work, state a concise plan and check `docs/plans/`.
+
+### Implement and finish
+
+1. Follow this file, `README.md`, the relevant decisions and plans. Keep
+   unrelated working-tree changes intact.
+2. Before finishing, inspect `git status` and `git diff`. Run `npm run check`
+   (typecheck, lint, tests, build, package verification) and report the exact
+   commands and results. Add tests for new behaviour; this project ships
+   tested code.
+3. Commit only intended files with a message prefixed `feat:`, `fix:`,
+   `chore:`, or `doc:` and referencing the issue, for example
+   `feat: add integration loader (#12)`. Use the same prefix in the PR title.
+4. Push only the task branch and open a pull request targeting `develop` (or the
+   previous branch of a stack). Body sections: `Summary`, `Changes`,
+   `Validation`, `Related issue`, with `Closes #ISSUE_NUMBER` when it delivers
+   the issue.
+5. Link the PR from the issue. Do not merge or close until checks pass and the
+   owner approves.
+
+If GitHub access is unavailable, keep the work ready locally and report the
+exact blocked action.
+
+## Delivering a feature as a stacked series with subagents
+
+- **Orchestrator** (main session): read the feature issue and the plan's task
+  table once, fix the order from the "Blocked by" column, then delegate one
+  task at a time. It does not read source or diffs beyond each agent's report.
+- **One subagent per task**, fresh context, run **sequentially**; start the
+  next only after the previous reports its PR.
+- **Brief**: task issue number, base branch, instruction to follow this file,
+  `README.md` and relevant decisions, explicit scope limits, required report.
+  Point at files by path; do not paste contents.
+- **Report** (at most ten lines): branch, PR URL, files changed, exact
+  validation commands and results, blockers or deviations.
+- **Stacking**: the first branch starts from `origin/develop`; each later
+  branch starts from the previous task's branch and its PR targets that
+  branch. After a base merges, retarget the next PR to `develop`.
+- **Stop conditions**: if validation fails, a decision is needed, or a
+  dependency is unresolved, stop and report instead of widening scope.
+
+## Project constraints
+
+- TypeScript (strict, ESM with a CJS build), Node >= 20.3, Vitest, ESLint and
+  Prettier. Prefer the standard library; the package has no runtime
+  dependencies. Explain a concrete need before adding one.
+- The engine is fail-closed and sandbox-first. Network access goes through
+  `src/http/url-policy.ts`; integrations must not bypass it, and secrets must
+  never be logged or appear in results.
+- Workflows are plain JSON validated against `schemas/workflow.schema.json`.
+  `schemas/` is generated by `scripts/write-schema.js`; do not hand-edit it.
+- Do not silently reopen established choices. Record consequential decisions
+  in `docs/decisions/`.
+
+## Build and validation
+
+- `npm run check` is the full gate; CI runs the same steps
+  (`.github/workflows/ci.yml`). Keep `dist/` and other build output out of
+  commits.
