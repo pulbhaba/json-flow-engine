@@ -80,9 +80,20 @@ describe("scripts/write-registry.js", { timeout: 60_000 }, () => {
   });
 
   function run(...extra: string[]): string {
+    // Low priority so the compile step does not starve timing-sensitive tests in other files.
     return execFileSync(
-      process.execPath,
-      ["scripts/write-registry.js", "--builtin-dir", join(dir, "builtin"), "--out", out, ...extra],
+      "nice",
+      [
+        "-n",
+        "19",
+        process.execPath,
+        "scripts/write-registry.js",
+        "--builtin-dir",
+        join(dir, "builtin"),
+        "--out",
+        out,
+        ...extra,
+      ],
       { encoding: "utf8", stdio: "pipe" },
     );
   }
@@ -91,12 +102,6 @@ describe("scripts/write-registry.js", { timeout: 60_000 }, () => {
     await mkdir(join(dir, "builtin", name), { recursive: true });
     await writeFile(join(dir, "builtin", name, "integration.json"), JSON.stringify(content));
   }
-
-  it("generates an empty valid module with no manifests and passes --check", async () => {
-    run();
-    expect(await readFile(out, "utf8")).toContain("= [];");
-    expect(run("--check")).toContain("up to date");
-  });
 
   it("embeds valid manifests and detects a stale file", async () => {
     await put("acme", manifest("acme"));

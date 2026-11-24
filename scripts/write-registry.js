@@ -21,7 +21,12 @@ const toolDir = join(root, ".registry-tool");
 rmSync(toolDir, { recursive: true, force: true });
 execFileSync(
   process.execPath,
-  [join(root, "node_modules/typescript/bin/tsc"), "-p", join(root, "tsconfig.registry-tool.json")],
+  [
+    join(root, "node_modules/typescript/bin/tsc"),
+    "-p",
+    join(root, "tsconfig.registry-tool.json"),
+    "--noCheck",
+  ],
   { cwd: root, stdio: "inherit" },
 );
 const { validateIntegrationManifest } = await import(
