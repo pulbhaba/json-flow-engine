@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "provider": "openai",
+  "name": "OpenAI",
+  "description": "OpenAI chat completions. Authenticate with an API key (bearer).",
+  "baseUrl": "https://api.openai.com/v1",
+  "allowedHosts": ["api.openai.com"],
+  "auth": { "type": "bearer" },
+  "actions": {
+    "chat-completion": {
+      "description": "Create a chat completion (POST /v1/chat/completions).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "model": { "type": "string", "minLength": 1 },
+          "messages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": { "enum": ["system", "developer", "user", "assistant"] },
+                "content": { "type": "string" }
+              },
+              "required": ["role", "content"],
+              "additionalProperties": false
+            }
+          },
+          "temperature": { "type": "number", "minimum": 0, "maximum": 2 }
+        },
+        "required": ["model", "messages"],
+        "additionalProperties": false
+      },
+      "request": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "body": {
+          "model": "{{input.model}}",
+          "messages": "{{input.messages}}",
+          "temperature": "{{input.temperature ?? 1}}"
+        }
+      },
+      "response": {
+        "successStatus": [200],
+        "output": {
+          "id": "{{input.body.id}}",
+          "model": "{{input.body.model}}",
+          "content": "{{input.body.choices[0].message.content}}",
+          "finishReason": "{{input.body.choices[0].finish_reason}}",
+          "usage": "{{input.body.usage}}"
+        }
+      }
+    }
+  }
+}

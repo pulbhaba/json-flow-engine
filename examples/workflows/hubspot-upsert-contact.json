@@ -1,0 +1,73 @@
+{
+  "$schema": "../../schemas/workflow.schema.json",
+  "id": "hubspot-upsert-contact",
+  "version": 1,
+  "description": "Search HubSpot for a contact by email and update it, or create it when it does not exist.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "email": { "type": "string" },
+      "firstname": { "type": "string" }
+    },
+    "required": ["email", "firstname"]
+  },
+  "steps": [
+    {
+      "id": "find-contact",
+      "type": "integration.call",
+      "config": {
+        "provider": "hubspot",
+        "action": "search-contacts",
+        "credentials": "hubspot",
+        "input": { "query": "{{input.email}}", "limit": 1 }
+      }
+    },
+    {
+      "id": "route",
+      "type": "control.condition",
+      "config": {
+        "if": { "greaterThan": ["{{steps.find-contact.total}}", 0] },
+        "then": [
+          {
+            "id": "update-contact",
+            "type": "integration.call",
+            "config": {
+              "provider": "hubspot",
+              "action": "update-contact",
+              "credentials": "hubspot",
+              "input": {
+                "contactId": "{{steps.find-contact.results[0].id}}",
+                "properties": { "firstname": "{{input.firstname}}" }
+              }
+            }
+          },
+          {
+            "id": "updated",
+            "type": "data.transform",
+            "config": { "value": { "action": "updated", "id": "{{steps.update-contact.id}}" } }
+          }
+        ],
+        "else": [
+          {
+            "id": "create-contact",
+            "type": "integration.call",
+            "config": {
+              "provider": "hubspot",
+              "action": "create-contact",
+              "credentials": "hubspot",
+              "input": {
+                "properties": { "email": "{{input.email}}", "firstname": "{{input.firstname}}" }
+              }
+            }
+          },
+          {
+            "id": "created",
+            "type": "data.transform",
+            "config": { "value": { "action": "created", "id": "{{steps.create-contact.id}}" } }
+          }
+        ]
+      }
+    }
+  ],
+  "output": "{{steps.route.output}}"
+}

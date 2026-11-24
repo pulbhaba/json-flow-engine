@@ -292,6 +292,15 @@ appear in manifests, workflows, results, events, logs or errors. User integratio
 Errors: `INTEGRATION_UNKNOWN`, `INTEGRATION_INPUT_INVALID`, `INTEGRATION_CREDENTIAL_MISSING`,
 `INTEGRATION_REQUEST_INVALID`, plus the `HTTP_*` codes.
 
+Built-in integrations (manifests in `integrations/builtin/`, bearer credentials):
+
+| Provider  | Actions                                                        | Example                                                                         |
+| --------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `hubspot` | `create-contact`, `update-contact`, `search-contacts` (CRM v3) | [`hubspot-upsert-contact.json`](examples/workflows/hubspot-upsert-contact.json) |
+| `openai`  | `chat-completion`                                              | [`openai-summarize.json`](examples/workflows/openai-summarize.json)             |
+
+Provide the token as credential `hubspot` or `openai`, for example `JSON_FLOW_CREDENTIAL_HUBSPOT`.
+
 ## Running workflows
 
 ### From code

@@ -1,0 +1,37 @@
+{
+  "$schema": "../../schemas/workflow.schema.json",
+  "id": "openai-summarize",
+  "version": 1,
+  "description": "Summarize a text with an OpenAI chat completion.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "text": { "type": "string" },
+      "model": { "type": "string" }
+    },
+    "required": ["text"]
+  },
+  "steps": [
+    {
+      "id": "summarize",
+      "type": "integration.call",
+      "config": {
+        "provider": "openai",
+        "action": "chat-completion",
+        "credentials": "openai",
+        "input": {
+          "model": "{{input.model ?? \"gpt-4o-mini\"}}",
+          "messages": [
+            { "role": "system", "content": "Summarize the user's text in one sentence." },
+            { "role": "user", "content": "{{input.text}}" }
+          ],
+          "temperature": 0
+        }
+      }
+    }
+  ],
+  "output": {
+    "summary": "{{steps.summarize.content}}",
+    "finishReason": "{{steps.summarize.finishReason}}"
+  }
+}
