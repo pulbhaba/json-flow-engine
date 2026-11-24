@@ -28,6 +28,12 @@ import {
   evaluateCondition,
 } from "../operations/builtin/control.js";
 import { createHttpRequestOperation, type FetchLike } from "../operations/builtin/http.js";
+import {
+  createIntegrationCallOperation,
+  type CredentialSource,
+} from "../operations/builtin/integration.js";
+import { combineIntegrations } from "../integrations/builtin.js";
+import type { LoadedIntegration } from "../integrations/load.js";
 import { transformOperation } from "../operations/builtin/transform.js";
 import { OperationRegistry, type RegisteredOperation } from "../operations/registry.js";
 import type { ExecutionMode, OperationContext, OperationDefinition } from "../operations/types.js";
@@ -71,6 +77,21 @@ export interface EngineOptions {
   mocks?: MockDefinition[];
   sandbox?: SandboxOptions;
   http?: { fetch?: FetchLike; urlPolicy?: UrlPolicy };
+  /**
+   * Integrations for `integration.call`. Built-in integrations are always available; `user`
+   * adds user integrations, typically `(await loadUserIntegrations()).user`. A user provider
+   * that collides with a built-in one without `overridesBuiltin` throws `INTEGRATION_INVALID`.
+   */
+  integrations?: {
+    user?: readonly LoadedIntegration[];
+    /**
+     * Credential lookup by name (the run context). Falls back to the environment variable
+     * `JSON_FLOW_CREDENTIAL_<NAME>`. Secrets never belong in manifests or workflows.
+     */
+    credentials?: CredentialSource;
+    /** Environment used for the fallback lookup. Default `process.env`. */
+    env?: Readonly<Record<string, string | undefined>>;
+  };
   limits?: Partial<EngineLimits>;
   logger?: Logger;
   onEvent?: (event: ExecutionEvent) => void;
@@ -148,6 +169,25 @@ export class Engine {
     this.registry.register(conditionOperation, CONDITION_RAW_KEYS);
     this.registry.register(assertOperation, ASSERT_RAW_KEYS);
     this.registry.register(createHttpRequestOperation(options.http ?? {}));
+    const combined = combineIntegrations(options.integrations?.user ?? []);
+    if (combined.errors.length > 0) {
+      throw new JsonFlowError(
+        "INTEGRATION_INVALID",
+        `Integrations are invalid: ${combined.errors.map((e) => `${e.file}: ${e.message}`).join("; ")}`,
+        { details: { files: combined.errors.map((e) => e.file) } },
+      );
+    }
+    this.registry.register(
+      createIntegrationCallOperation({
+        integrations: combined.integrations,
+        ...(options.integrations?.credentials === undefined
+          ? {}
+          : { credentials: options.integrations.credentials }),
+        ...(options.integrations?.env === undefined ? {} : { env: options.integrations.env }),
+        ...(options.http?.fetch === undefined ? {} : { fetch: options.http.fetch }),
+        ...(options.http?.urlPolicy === undefined ? {} : { urlPolicy: options.http.urlPolicy }),
+      }),
+    );
     for (const operation of options.operations ?? []) this.registerOperation(operation);
     for (const mock of options.mocks ?? []) this.mock(mock.type, mock);
   }

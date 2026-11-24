@@ -11,6 +11,10 @@ import {
   transformConfigSchema,
 } from "../operations/builtin/transform.js";
 import { HTTP_CONFIG_SCHEMA_ID, httpRequestConfigSchema } from "../operations/builtin/http.js";
+import {
+  INTEGRATION_CALL_CONFIG_SCHEMA_ID,
+  integrationCallConfigSchema,
+} from "../operations/builtin/integration.js";
 
 /**
  * JSON Schema (draft 2020-12) for the workflow format, version 1. `scripts/write-schema.js`
@@ -63,6 +67,7 @@ export const stepSchema: JsonObject = {
     builtinConfig("control.assert", ASSERT_CONFIG_SCHEMA_ID),
     builtinConfig("data.transform", TRANSFORM_CONFIG_SCHEMA_ID),
     builtinConfig("http.request", HTTP_CONFIG_SCHEMA_ID),
+    builtinConfig("integration.call", INTEGRATION_CALL_CONFIG_SCHEMA_ID),
   ],
 };
 
@@ -107,6 +112,7 @@ export const workflowSchema: JsonObject = {
     assertStepConfig: assertStepConfigSchema,
     transformConfig: transformConfigSchema,
     httpRequestConfig: httpRequestConfigSchema,
+    integrationCallConfig: integrationCallConfigSchema,
   },
 };
 
