@@ -1,6 +1,7 @@
 import { parseArgs } from "node:util";
 import { createEngine, type EngineOptions } from "./engine/engine.js";
 import { isJsonFlowError, JsonFlowError, WorkflowValidationError } from "./errors.js";
+import { integrationList, integrationScaffold, integrationValidate } from "./integrations/cli.js";
 import { loadUserIntegrations } from "./integrations/load.js";
 import type { JsonValue } from "./json.js";
 import { createConsoleLogger, type LogLevel } from "./logger.js";
@@ -13,6 +14,9 @@ Usage:
   json-flow validate <workflow.json>
   json-flow run <workflow.json> [--input <input.json>] [--mocks <mocks.json>] [--live] [--allow <origin>]...
   json-flow test <workflow.json> --mocks <mocks.json> [--input <input.json>]
+  json-flow integration list [--dir <user-dir>]
+  json-flow integration validate <integration.json | provider-dir>
+  json-flow integration scaffold <provider> [--dir <user-dir>]
 
 Commands:
   validate   Check the workflow definition (schema, references, built-in configs). Exit 1 on issues.
@@ -21,6 +25,9 @@ Commands:
              --live runs operations for real; --allow adds an origin to the URL policy,
              e.g. --allow http://localhost:3000 (plain http and private hosts are refused otherwise).
   test       Sandbox-only run with mocks required. Exit 0 if the workflow succeeded, 1 otherwise.
+  integration list      Show built-in and user integrations (labelled separately) with their actions.
+  integration validate  Check a manifest file or provider directory; JSON-pointer errors, exit 1 on failure.
+  integration scaffold  Write a starter integrations/user/<provider>/integration.json; never overwrites.
 
 Options:
   --input <file>      JSON file with the workflow input (default: {}).
@@ -30,6 +37,7 @@ Options:
   --allow <origin>    Allowed origin for http.request in live mode (repeatable).
   --allow-http        Allow plain http:// to any host in live mode.
   --allow-private     Allow loopback and private hosts in live mode.
+  --dir <dir>         User integrations directory (default: ./integrations/user).
   --log <level>       debug | info | warn | error | silent (default: warn).
   --json              Print the full execution result as JSON instead of a summary.
   --help              Show this help.
@@ -60,6 +68,33 @@ export async function runCli(argv: string[], io: CliIo = defaultIo): Promise<num
   if (values.help === true || command === undefined) {
     io.stdout(USAGE);
     return command === undefined && values.help !== true ? 2 : 0;
+  }
+  if (command === "integration") {
+    const [, sub, target] = positionals;
+    try {
+      switch (sub) {
+        case "list":
+          return await integrationList(values.dir, io);
+        case "validate":
+        case "scaffold":
+          if (target === undefined) {
+            io.stderr(
+              `Missing ${sub === "validate" ? "manifest path" : "provider id"}.\n\n${USAGE}`,
+            );
+            return 2;
+          }
+          return sub === "validate"
+            ? await integrationValidate(target, io)
+            : await integrationScaffold(target, values.dir, io);
+        case undefined:
+        default:
+          io.stderr(`Unknown integration command "${sub ?? ""}".\n\n${USAGE}`);
+          return 2;
+      }
+    } catch (error) {
+      io.stderr(error instanceof Error ? error.message : String(error));
+      return 1;
+    }
   }
   if (file === undefined) {
     io.stderr(`Missing workflow file.\n\n${USAGE}`);
@@ -103,6 +138,7 @@ function parseCliArgs(argv: string[]) {
       allow: { type: "string", multiple: true },
       "allow-http": { type: "boolean" },
       "allow-private": { type: "boolean" },
+      dir: { type: "string" },
       log: { type: "string" },
       json: { type: "boolean" },
       help: { type: "boolean" },

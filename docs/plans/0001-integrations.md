@@ -1,6 +1,8 @@
 # Plan 0001: Integration system
 
-Status: in progress. Design: `docs/decisions/0001-integrations.md`.
+Status: implementation complete, merging pending. Every task has an open pull request, stacked
+in task order (#8 -> #9 -> #10 -> #11 -> #12 -> the #7 pull request); the plan is not done until
+the stack is merged. Design: `docs/decisions/0001-integrations.md`.
 
 Outcome: users call HubSpot, OpenAI and similar services by name from a
 workflow, with built-in and user-defined integrations loaded without extra

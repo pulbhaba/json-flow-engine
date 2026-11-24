@@ -1,7 +1,6 @@
-# 0001: Integrations (proposal)
+# 0001: Integrations
 
-Status: proposed. Task issues should treat the points below as the working
-design and record any deviation here.
+Status: accepted. Task issues record any deviation from the points below here.
 
 ## Context
 

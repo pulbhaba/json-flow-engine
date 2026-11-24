@@ -301,6 +301,11 @@ Built-in integrations (manifests in `integrations/builtin/`, bearer credentials)
 
 Provide the token as credential `hubspot` or `openai`, for example `JSON_FLOW_CREDENTIAL_HUBSPOT`.
 
+Add your own provider with `json-flow integration scaffold <provider>`, check it with
+`json-flow integration validate <path>` and see what is available with `json-flow integration list`.
+The manifest reference, credentials, testing with mocks and a copy-paste prompt for AI agents are in
+[`docs/integrations.md`](docs/integrations.md).
+
 ## Running workflows
 
 ### From code
@@ -332,6 +337,7 @@ registry-independent part (structure, expressions, references).
 json-flow validate <workflow.json>
 json-flow run <workflow.json> [--input f.json | --input-json '{...}'] [--mocks m.json] [--live] [--allow origin]... [--json] [--log level]
 json-flow test <workflow.json> --mocks m.json [--input f.json]
+json-flow integration list | validate <path> | scaffold <provider>   # see docs/integrations.md
 ```
 
 `run` is sandbox by default. `--live` is required for real execution and cannot be combined

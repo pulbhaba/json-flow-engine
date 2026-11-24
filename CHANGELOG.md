@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- Integration system (#1): declarative integration manifests with a JSON Schema
+  (`schemas/integration.schema.json`) and validator (#2); loader for `integrations/builtin` and
+  `integrations/user` with explicit `overridesBuiltin` opt-in (#3); built-in registry generated at
+  build time (#4); `integration.call` operation with credentials, sandbox mocks and URL policy (#5).
+- CLI `json-flow integration list | validate <path> | scaffold <provider>` and the authoring guide
+  `docs/integrations.md`, including a copy-paste prompt for AI agents (#7).
 - Built-in `hubspot` (create/update/search contacts) and `openai` (chat completion) integrations with example workflows (#6).
 
 ## [0.1.0] - 2026-10-22
