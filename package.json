@@ -38,7 +38,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:schema",
+    "build": "npm run clean && npm run build:registry && npm run build:esm && npm run build:cjs && npm run build:schema",
+    "build:registry": "node scripts/write-registry.js",
     "build:esm": "tsc -p tsconfig.build.esm.json",
     "build:cjs": "tsc -p tsconfig.build.cjs.json && node scripts/write-cjs-package.js",
     "build:schema": "node scripts/write-schema.js",

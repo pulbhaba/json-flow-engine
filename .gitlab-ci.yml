@@ -21,6 +21,7 @@ check:node22:
     - npm test
     - npm run build
     - node scripts/write-schema.js --check
+    - node scripts/write-registry.js --check
     - npm run verify:package
 
 check:node24:

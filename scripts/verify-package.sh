@@ -21,6 +21,11 @@ if grep -vE "$allowed" "$consumer/files.txt"; then
   exit 1
 fi
 
+echo "== compiled built-in registry"
+for f in dist/esm/integrations/generated/builtin.js dist/cjs/integrations/generated/builtin.js; do
+  grep -qx "package/$f" "$consumer/files.txt" || { echo "missing $f in the package" >&2; exit 1; }
+done
+
 cd "$consumer"
 cat > package.json <<'JSON'
 { "name": "consumer-check", "private": true, "version": "0.0.0" }
@@ -28,7 +33,7 @@ JSON
 npm install --silent --no-audit --no-fund "./$tarball"
 
 cat > esm.mjs <<'JS'
-import { createEngine, defineWorkflow, assertSucceeded, httpResponse } from "json-flow-engine";
+import { createEngine, defineWorkflow, assertSucceeded, httpResponse, getBuiltinManifests } from "json-flow-engine";
 const workflow = defineWorkflow({
   id: "consumer-esm", version: 1,
   steps: [{ id: "call", type: "http.request", config: { method: "GET", url: "https://api.example.com/{{input.id}}" } }],
@@ -39,11 +44,13 @@ engine.mock("http.request", { responses: [{ output: httpResponse(200, { ok: true
 const result = await engine.execute(workflow, { id: 1 });
 assertSucceeded(result);
 if (result.output?.ok !== true) throw new Error("unexpected output");
+if (!Array.isArray(getBuiltinManifests())) throw new Error("built-in registry missing");
 console.log("esm ok", result.status, engine.calls[0].config.url);
 JS
 
 cat > cjs.cjs <<'JS'
-const { createEngine, defineWorkflow, assertSucceeded } = require("json-flow-engine");
+const { createEngine, defineWorkflow, assertSucceeded, getBuiltinManifests } = require("json-flow-engine");
+if (!Array.isArray(getBuiltinManifests())) throw new Error("built-in registry missing");
 const workflow = defineWorkflow({ id: "consumer-cjs", version: 1, steps: [{ id: "t", type: "data.transform", config: { value: { n: "{{input.n}}" } } }], output: "{{steps.t.n}}" });
 createEngine({ mode: "sandbox" }).execute(workflow, { n: 2 }).then((result) => {
   assertSucceeded(result);

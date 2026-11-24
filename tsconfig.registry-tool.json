@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".registry-tool",
+    "rootDir": "src",
+    "declaration": false
+  },
+  "include": ["src/integrations/validate.ts"]
+}

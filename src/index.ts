@@ -57,6 +57,11 @@ export {
   type LoadedIntegration,
   type LoadIntegrationsOptions,
 } from "./integrations/load.js";
+export {
+  getBuiltinManifests,
+  combineIntegrations,
+  type CombinedIntegrations,
+} from "./integrations/builtin.js";
 export { integrationSchema, INTEGRATION_SCHEMA_ID } from "./integrations/schema.js";
 export {
   INTEGRATION_AUTH_TYPES,

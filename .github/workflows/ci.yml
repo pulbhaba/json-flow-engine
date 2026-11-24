@@ -25,6 +25,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: node scripts/write-schema.js --check
+      - run: node scripts/write-registry.js --check
       - run: npm run verify:package
 
   runtime-support:

@@ -5,3 +5,5 @@ package-lock.json
 .consumer-check/
 CHANGELOG.md
 schemas/
+.registry-tool/
+src/integrations/generated/
