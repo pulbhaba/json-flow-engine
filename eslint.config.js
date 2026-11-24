@@ -5,7 +5,15 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "node_modules/**", "coverage/**", ".consumer-check/**", "bin/**"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "coverage/**",
+      ".consumer-check/**",
+      "bin/**",
+      ".registry-tool/**",
+      "src/integrations/generated/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
