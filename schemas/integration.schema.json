@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://json-flow-engine.dev/schemas/v1/integration.json",
+  "title": "json-flow-engine integration manifest",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "baseUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "allowedHosts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 253,
+        "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "none",
+            "bearer",
+            "basic",
+            "header",
+            "query"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "if": {
+        "properties": {
+          "type": {
+            "enum": [
+              "header",
+              "query"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "else": {
+        "properties": {
+          "name": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "actions": {
+      "type": "object",
+      "propertyNames": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "inputSchema": {
+            "type": "object"
+          },
+          "request": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "enum": [
+                  "GET",
+                  "HEAD",
+                  "OPTIONS",
+                  "POST",
+                  "PUT",
+                  "PATCH",
+                  "DELETE"
+                ]
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^/"
+              },
+              "query": {
+                "type": "object"
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "body": {}
+            },
+            "required": [
+              "method",
+              "path"
+            ],
+            "additionalProperties": false
+          },
+          "response": {
+            "type": "object",
+            "properties": {
+              "output": {},
+              "successStatus": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 599
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "inputSchema",
+          "request"
+        ],
+        "additionalProperties": false
+      },
+      "minProperties": 1
+    }
+  },
+  "required": [
+    "provider",
+    "baseUrl",
+    "allowedHosts",
+    "auth",
+    "actions"
+  ],
+  "additionalProperties": false
+}

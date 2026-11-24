@@ -44,6 +44,21 @@ export {
   type WorkflowExecutionConfig,
 } from "./workflow/types.js";
 
+export {
+  validateIntegrationManifest,
+  type IntegrationValidationResult,
+} from "./integrations/validate.js";
+export { integrationSchema, INTEGRATION_SCHEMA_ID } from "./integrations/schema.js";
+export {
+  INTEGRATION_AUTH_TYPES,
+  INTEGRATION_SCHEMA_VERSION,
+  type IntegrationAction,
+  type IntegrationAuth,
+  type IntegrationManifest,
+  type IntegrationRequest,
+  type IntegrationResponse,
+} from "./integrations/types.js";
+
 export type {
   ExecutionMode,
   OperationContext,

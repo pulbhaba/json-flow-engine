@@ -16,6 +16,7 @@ export const ERROR_CODES = [
   "CONSTANT_UNKNOWN",
   "INPUT_REFERENCE_INVALID",
   "SCHEMA_INVALID",
+  "INTEGRATION_INVALID",
   // Expressions and conditions (detected at runtime while resolving a step)
   "EXPRESSION_INVALID",
   "EXPRESSION_UNRESOLVED",
